@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServlet
 
 import javax.servlet.{ServletConfig, ServletContext}
 
-import javax.ws.rs.{DefaultValue, GET, Path, PathParam, Produces, QueryParam, NotFoundException}
+import javax.ws.rs.{DefaultValue, GET, POST, Path, FormParam, PathParam, Produces, Consumes, QueryParam, NotFoundException}
 import javax.ws.rs.core.{Context, Response, UriInfo, UriBuilder}
 import javax.ws.rs.ext.{Provider, ExceptionMapper}
 import javax.annotation._
@@ -56,6 +56,39 @@ trait Base extends richness.appImplicits {
   def retrieveUrl(bs: Bitstream, params: Iterable[(String, String)] = Iterable.empty) = 
     url(s"/bitstreams/${bs.getID}/retrieve", params)
 
+  object flash {
+    val KeyNow  = "disco.flash.now"
+    val KeyNext = "disco.flash.next"
+
+    def rotateIn {
+      for {
+        session <- request.optSession
+        obj     <- session.optAttribute[Map[String, String]](KeyNext)
+      } {
+        request.setAttribute(KeyNow, obj)
+        session.removeAttribute(KeyNext)
+      }
+    }
+
+    def rotateOut {
+      for {
+        obj <- request.optAttribute[Map[String, String]](KeyNext)
+      } request.getSession.setAttribute(KeyNext, obj)
+    }
+
+    def now = 
+      request.optAttribute[Map[String, String]](KeyNow).getOrElse(Map.empty)
+
+    def now(key: String) = 
+      request.optAttribute[Map[String, String]](KeyNow).flatMap(_.get(key))
+
+    def next(key: String, value: String) = {
+      val curr = request.optAttribute[Map[String, String]](KeyNext).getOrElse(Map.empty)
+      request.setAttribute(KeyNext, curr + (key -> value))
+    }
+
+  }
+
 
   object dspaceContext {
     val UserIdKey  = "disco.user.id"
@@ -69,6 +102,16 @@ trait Base extends richness.appImplicits {
       } context.setCurrentUser(EPerson.find(context, id))
       request.setAttribute(ContextKey, context)
       context
+    }
+
+    def userSignedIn = Option(get.getCurrentUser).nonEmpty
+
+    def setUserId(id: Int) {
+      request.getSession.setAttribute(UserIdKey, id)
+    }
+
+    def unsetUserId {
+      request.optSession.foreach(_.removeAttribute(UserIdKey))
     }
 
     def get: DSpaceContext = 
@@ -125,8 +168,14 @@ abstract class BaseController extends Base {
   @Context var response: HttpServletResponse = _
   @Context var servletContext: ServletContext = _
 
-  @PreDestroy def cleanUp { 
-    System.out.println("clean-up")
+  @PostConstruct def before {
+    System.out.println("before")
+    flash.rotateIn
+  }
+
+  @PreDestroy def after { 
+    System.out.println("after")
+    flash.rotateOut
     dspaceContext.complete
   }
 }
@@ -168,13 +217,6 @@ class HomeController extends BaseController with Pages {
 
   lazy val browse = wrappers.Browse(dspaceContext.get, null, request)
 
-  // @GET @Path("/communities/{id}") 
-  // def getCommunity(@PathParam("id") id: String): Response = { 
-  //   var output = "Jersey says:\r\n"
-  //   output += id + "\r\n"
-  //   output += url("/what-ah")
-  //   Response.status(200).`type`("text/plain").entity(output).build 
-  // }
 
 }
 
@@ -266,45 +308,41 @@ class HandleController extends BaseController with Base {
     val uri = UriBuilder.fromUri(uriInfo.getRequestUri).replacePath(url(dso)).build()
     Response.seeOther(uri).build
   }
-
 }
 
+@Path("")
+class AuthController extends BaseController with Base {
 
+  @GET @Path("/login")
+  def loginGet: Response = { 
+    val output = views.html.login(this).toString
+    Response.status(200).entity(output).build 
+  }
 
+  @GET @Path("/logout")
+  def logout: Response = {
+    dspaceContext.unsetUserId
+    flash.next("success", "Logout successful")
+    Response.seeOther(new java.net.URI("/")).build
+  }
 
-// @Provider
-// class NotFound extends ExceptionMapper[NotFoundException] with Base {
-//   @Override def toResponse(ex: NotFoundException): Response = {
-//     servletContext.getNamedDispatcher("default").forward(request, response)
-//     null
-//   }
-// }
+  @POST @Path("/login") @Consumes(Array("application/x-www-form-urlencoded"))
+  def loginPost(
+    @FormParam("username") username: String,
+    @FormParam("password") password: String): Response = {
 
-// class HelloWorld {
+    val loc = utils.authenticate(dspaceContext.get, username, password) match {
+      case Right(id) => {
+        dspaceContext.setUserId(id)
+        flash.next("success", "Login successful")
+        new java.net.URI("/")
+      }
+      case Left(msg) => {
+        flash.next("danger", "Login failed")
+        new java.net.URI("/login")
+      }
+    }
+    Response.seeOther(loc).build
+  }
 
-//   var servletConfig: Option[ServletConfig] = None
-
-//   def servletContext = servletConfig.map(_.getServletContext).get
-
-//   def init(conf: ServletConfig) { servletConfig = Option(conf) }
-
-//   def doGet(request: HttpServletRequest, response: HttpServletResponse) {
-//     val out = response.getWriter
-//     response.setContentType("text/html") 
-//     out.println("<H1>Hello from a Servlet</H1>")
-//     out.println(request.getAttribute("id"))
-//     out.println(request.getAttribute("action"))
-//     val path = url("/foos/42", Map("help" -> "yo"))(request)
-//     out.println(s"""<a href="$path">here</a>""")
-//     out.println(servletContext.getContextPath)
-//   }
-
-//   def url(
-//     path: String,
-//     params: Iterable[(String, String)] = Iterable.empty)(request: HttpServletRequest): String = {
-//     val pairs = params.map { case (k, v) => Utils.encodeURL(k) + "=" + Utils.encodeURL(v) }
-//     val query = if (pairs.isEmpty) "" else pairs.mkString("?", "&", "")
-//     servletContext.getContextPath + path + query
-//   }
-
-// }
+}

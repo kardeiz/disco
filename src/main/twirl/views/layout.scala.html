@@ -19,6 +19,13 @@
   </ol>
 }
 
+@alerts = {
+  @for( (k, v) <- flash.now ) {
+    <div class="alert alert-@k">
+      <p>@v</p>
+    </div>
+  }
+}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -67,6 +74,16 @@
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
               <li><a href="@url("/")">Home</a></li>
+              @if(dspaceContext.userSignedIn) {
+                <li>
+                  <a href="@url("/logout")" 
+                    title="Signed in as: @dspaceContext.get.getCurrentUser.getEmail">
+                    Logout
+                  </a>
+                </li>
+              } else {
+                <li><a href="@url("/login")">Login</a></li>
+              }
             </ul>
           </div>
         </div>
@@ -76,6 +93,7 @@
           case Some(sidebar) => {
             <div class="col-md-8">
               @breadcrumbs
+              @alerts
               @body
             </div>
             <div class="col-md-4">
@@ -85,6 +103,7 @@
           case _ => {
             <div class="col-md-12">
               @breadcrumbs
+              @alerts
               @body
             </div>
           }

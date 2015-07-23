@@ -7,11 +7,23 @@ import java.io.File
 import org.dspace.core.ConfigurationManager
 import org.dspace.servicemanager.DSpaceKernelInit
 
+import org.dspace.core.Context
+import org.dspace.authenticate.AuthenticationManager
+import org.dspace.authenticate.AuthenticationMethod
+
 import scala.collection.JavaConverters._
 
 case class TrailItem(title: String, url: Option[String] = None)
 
 object utils {
+
+  def authenticate(context: Context, username: String, password: String): Either[String, Int] = {
+    System.out.println(context, username, password)
+    val res = AuthenticationManager.authenticate(context, username, password, null, null)
+    System.out.println(res)
+    if (res == AuthenticationMethod.SUCCESS) Right(context.getCurrentUser.getID) else Left("Failed")
+  }
+
 
   object aliases {
     type FacetDetails = (Boolean, String, Map[String, String], Long)
