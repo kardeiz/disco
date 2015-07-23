@@ -1,0 +1,21 @@
+@(item: org.dspace.content.Item)(context: Base)
+@import context._
+
+<tr>
+  <td class="preview">
+    @for( thumbnail <- item.optThumbnail(dspaceContext.get) ) {
+      <a href="@url(item)">
+        <img src="@retrieveUrl(thumbnail)" />
+      </a>
+    }
+  </td>
+  <td>
+    <a href="@url(item)">@item.getName</a><br/>
+    @for( creator <- item.optCreator(dspaceContext.get) ) {
+      <span>@creator</span><br/>
+    }
+    @for( date <- item.optDate(dspaceContext.get) ) {
+      <span>@date</span><br/>
+    }
+  </td>
+</tr>

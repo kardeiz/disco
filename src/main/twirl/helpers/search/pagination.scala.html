@@ -1,0 +1,53 @@
+@(wrapper: wrappers.Search)(context: Pages)
+
+@import context._
+
+@currentPage = @{
+  ((wrapper.result.getStart / wrapper.result.getMaxResults) + 1).toInt
+}
+
+@target(i: Int) = @{
+  baseUrl(wrapper.toMap + ("page" -> i.toString))
+}
+
+@pages = @{
+  val pagesTotal = {
+    val t = wrapper.result.getTotalSearchResults - 1
+    val m = wrapper.result.getMaxResults
+    (( t / m ) + 1).toInt
+  }
+  Seq(
+    1,
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+    pagesTotal
+  ).distinct.filter(x => (x > 0 && x <= pagesTotal) )
+}
+
+@paginationLabel = @{
+  "Now showing items %s through %s of %s".format(
+    wrapper.result.getStart + 1,
+    wrapper.result.getStart + wrapper.result.getDspaceObjects.size,
+    wrapper.result.getTotalSearchResults
+  )
+}
+
+<div class="clearfix search-pagination">
+  <div class="pull-left">
+    <div class="ds-label">
+      <span>@paginationLabel</span>
+    </div>
+  </div>
+  <div class="pull-right">
+    <ul class="pagination">
+      @for(i <- pages) {
+        @if( i == currentPage ) {
+          <li class="active"><a href="@target(i)">@i</a></li>
+        } else {
+          <li><a href="@target(i)">@i</a></li>
+        }
+      }
+    </ul>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+@(implicit context: Pages)
+
+@import context._
+
+<div class="row">
+  <div class="col-md-2">
+    <span class="browse-by-label">Browse by</span>
+  </div>
+  <div class="col-md-10">
+    <ul class="nav nav-pills">
+      @for( t <- wrappers.Browse.types ) {
+        @if( request.optParameter("type") == Some(t) ) {
+          <li class="active">
+            <a href="@baseUrl(Map("action" -> "browse", "type" -> t))">
+              @utils.messages(s"browse.by.label.$t")
+            </a>
+          </li>
+        } else {
+          <li>
+            <a href="@baseUrl(Map("action" -> "browse", "type" -> t))">
+              @utils.messages(s"browse.by.label.$t")
+            </a>
+          </li>
+        }
+      }
+    </ul>
+  </div>
+</div>
+

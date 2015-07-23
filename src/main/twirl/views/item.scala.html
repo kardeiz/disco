@@ -1,0 +1,130 @@
+@(context: ItemsController)
+
+@import context._
+@import org.dspace.content.Item
+
+@shortMetadata = {
+  <table class="table table-striped">
+    <tr><td>Title</td><td>@dso.getName</td></tr>
+    @for( creator <- dso.optCreator(dspaceContext.get) ) {
+      <tr><td>Creator</td><td>@creator</td></tr>
+    }
+    @for( date <- dso.optDate(dspaceContext.get) ) {
+      <tr><td>Date</td><td>@date</td></tr>
+    }
+    @for( description <- dso.optDescription(dspaceContext.get) ) {
+      <tr><td>Description</td><td>@description</td></tr>
+    }
+    <tr>
+      <td>Permanent link</td>
+      <td>
+        <a href="@url(s"/handle/${dso.getHandle}")">
+          @fullUrl(s"/handle/${dso.getHandle}")
+        <a>
+      </td>
+    </tr>
+  </table>
+}
+
+@toggleFullUrlBlock(full: Boolean) = {
+  @if( full ) {
+    <p style="text-align: right;">
+      <a href="@baseUrl(Map("show" -> "full"))">Show full item record</a>
+    </p>
+  } else {
+    <p style="text-align: right;">
+      <a href="@baseUrl()">Show short item record</a>
+    </p>
+  }
+}
+
+
+@body = {
+  <div class="page-header">
+    <h3>@title</h3>
+  </div>
+  @if(request.optParameter("show") != Some("full")) {
+    <div class="row">
+      @dso.optPreview(dspaceContext.get) match {
+        case Some(preview) => {
+          <div class="col-md-7">
+            <!-- <a href="#"> -->
+              <img class="preview-img" src="@retrieveUrl(preview)"/>
+              
+            <!-- </a> -->
+          </div>
+          <div class="col-md-5">
+            @toggleFullUrlBlock(true)
+            @shortMetadata
+          </div>
+        }
+        case _ => {
+          <div class="col-md-12">
+            @toggleFullUrlBlock(true)
+            @shortMetadata
+          </div>
+        }
+      }
+    </div>
+  } else {
+    <div>
+      @toggleFullUrlBlock(false)
+      <table class="table table-striped full-metadata">
+        @for( dcv <- dso.allMetadata(dspaceContext.get) ) {
+          <tr>
+            <td><code>@dcv.getField</code></td>
+            <td>@dcv.value</td>
+          </tr>
+        }
+      </table>
+    </div>
+  }
+  <hr/>
+  <h4>Files in this item</h4>
+  <table class="table">
+    <tr>
+      <th>File</th>
+      <th>Size</th>
+      <th>Format</th>
+      <th>View</th>
+    </tr>
+    @for( bs <- dso.originalBitstreams ) {
+      <tr>
+        <td>
+          <a href="@retrieveUrl(bs)">@bs.getName</a>          
+        </td>
+        <td>
+          <span>@utils.humanReadableByteCount(bs.getSize)</span>    
+        </td>
+        <td>
+          <span>@bs.getFormatDescription</span>    
+        </td>
+        <td>
+          @for( thumb <- dso.optThumbnailForBitstream(dspaceContext.get, bs) ) {
+            <a href="@retrieveUrl(bs)">
+              <img src="@retrieveUrl(thumb)"/>
+            </a> 
+          }
+        </td>
+      </tr>
+    } 
+  </table>
+  @for( parent <- optParent ) {
+    <div class="panel panel-default">
+      <div class="panel-heading">This item appears in the following collection:</div>
+      <div class="panel-body">
+        <a href="@url(parent)">@parent.getName</a>
+      <span>&nbsp;[@parent.countItems]</span>
+      </div>
+    </div>
+  }
+}
+    
+
+@views.html.layout(
+  title = title,
+  body = body,
+  trailItems = trailItems
+)(context)
+
+

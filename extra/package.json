@@ -1,0 +1,20 @@
+{
+  "name": "local",
+  "version": "0.0.0",
+  "description": "",
+  "main": "gulpfile.js",
+  "dependencies": {
+    "gulp": "^3.8.9",
+    "gulp-uglify": "*",
+    "gulp-rename": "*",
+    "gulp-concat": "*",
+    "gulp-coffee": "*",
+    "gulp-less": "*",
+    "streamqueue": "*"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

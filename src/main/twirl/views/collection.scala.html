@@ -1,0 +1,74 @@
+@(context: CollectionsController)
+
+@import context._
+
+@body = {
+  <div class="page-header">
+    <h3>@title</h3>
+    @for( sub <- subTitle ) {
+      <h4><small>@sub</small></h4>
+    }
+  </div>
+  @if( action == None ) {
+    @helpers.browse.html.typeOptions(context)
+    <br/>
+    @helpers.search.html.baseForm(None)(context)
+    <div class="recent-submissions">
+      <h4>Recent Submissions</h4>
+      <table class="table">
+        @for(item <- recentItems) {
+          @helpers.html.itemRow(item)(context)
+        }
+      </table>
+    </div>
+  }
+  @if( action == Some("browse") ) {
+    @helpers.browse.html.typeOptions(context)
+    <br/>
+    @helpers.browse.html.commonOptions(browse)(context)
+    @helpers.browse.html.pager(browse)(context)
+    <div class="browse-list">
+      <table class="table">
+        @for( result <- browse.browseResults ) {
+          @result match {
+            case obj: org.dspace.content.Item => { @helpers.html.itemRow(obj)(context) }
+            case res: wrappers.Browse.StringResult => { 
+              @helpers.browse.html.stringResult(browse, res)(context)
+            }
+          }
+        }
+      </table>
+    </div>
+  }
+  @if( action == Some("search") ) {
+    @helpers.search.html.baseForm(search.query)(context)
+    @helpers.search.html.commonOptions(search)(context)
+    @helpers.search.html.pagination(search)(context)
+    <div class="search-list">
+      <table class="table">
+        @for( (obj, c) <- search.resultCommsCollsWithCounts ) {
+          <tr>
+            <td>
+              <a href="@url(obj)">@obj.getName</a>&nbsp;[@c]
+            </td>
+          </tr>
+        }
+      </table>
+    </div>
+    <div class="search-list">
+      <table class="table">
+        @for( obj <- search.resultItems ) {
+          @helpers.html.itemRow(obj)(context)
+        }
+      </table>
+    </div>
+  }
+}
+    
+
+@views.html.layout(
+  title = title,
+  body = body,
+  trailItems = trailItems,
+  optSidebar = Some(helpers.html.sidebar(search.processedFacets)(context))
+)(context)

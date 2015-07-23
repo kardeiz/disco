@@ -1,0 +1,44 @@
+@(facetsWrapper: utils.aliases.FacetsWrapper)(context: Pages)
+
+@import context._
+
+@for( facets <- facetsWrapper ) {
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">Refine Search</h4>
+    </div>
+    <div class="panel-body">
+      @for( (name, facetDetails) <- facets ) {
+        <div class="panel sub-panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title">@utils.messages(s"filter.key.$name")</h4>
+          </div>
+          <div class="panel-body">
+            <table class="table table-condensed">
+              @for( (is, dv, map, count) <- facetDetails ) {
+                <tr>
+                  <td>
+                    @if( is ) {
+                      <span>
+                        <span>@dv</span>
+                        &nbsp;
+                        <a href="@baseUrl(map)">
+                          <span class="glyphicon glyphicon-remove"></span>
+                        </a>
+                      </span>
+                    } else {
+                      <a href="@baseUrl(map)">@dv</a>
+                    }
+                  </td>
+                  <td style="text-align: right;">
+                    <span class="badge">@count</span>
+                  </td>
+                </tr>
+              }
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

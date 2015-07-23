@@ -1,0 +1,12 @@
+@(wrapper: wrappers.Browse, result: wrappers.Browse.StringResult)(context: Pages)
+
+@import context._
+
+<tr>
+  <td>
+    <a href="@baseUrl(Map("action" -> "browse", "type" -> wrapper.`type`, "value" -> result.value))">
+      @result.value
+    </a>&nbsp;[@result.count]
+  </td>
+</tr>
+

@@ -1,0 +1,58 @@
+@(wrapper: wrappers.Browse)(context: Pages)
+
+@import context._
+
+<form class="browse-by-common-opts">
+  <input type="hidden" name="action" value="browse"/>
+  <input type="hidden" name="type" value="@{wrapper.`type`}"/>
+  <div class="well">
+    <div class="ds-wrapper">
+      <div class="ds-group ds-starts-with">
+        <div class="input-group">
+          <div class="input-group-addon">
+            <label for="starts_with">Starts with</label>
+          </div>
+          <input type="text" 
+            name="starts_with" 
+            class="form-control" 
+            value="@wrapper.startsWith.getOrElse("")"/>
+        </div>
+      </div>
+      <div class="ds-group ds-order">
+        <div class="input-group">
+          <div class="input-group-addon">
+            <label for="order">Dir</label>
+          </div>
+          <select name="order" class="form-control">
+            @for( (rv, dv) <- wrappers.Browse.orderOpts) {
+              @if( wrapper.order == rv.toLowerCase ) {
+                <option value="@rv" selected="selected">@dv</option>
+              } else {
+                <option value="@rv">@dv</option>
+              } 
+            }
+          </select>
+        </div>
+      </div>
+      <div class="ds-group ds-rpp">
+        <div class="input-group">
+          <div class="input-group-addon">
+            <label for="rpp">Per</label>
+          </div>
+          <select name="rpp" class="form-control">
+            @for( (rv, dv) <- wrappers.Browse.rppOpts) {
+              @if( wrapper.rpp == rv ) {
+                <option value="@rv" selected="selected">@dv</option>
+              } else {
+                <option value="@rv">@dv</option>
+              } 
+            }
+          </select>
+        </div>
+      </div>
+      <div class="ds-group ds-submit">
+        <button class="btn btn-primary">Update</button>
+      </div>
+    </div>
+  </div>
+</form>

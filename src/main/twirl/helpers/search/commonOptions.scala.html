@@ -1,0 +1,62 @@
+@(wrapper: wrappers.Search)(context: Pages)
+
+@import context._
+
+<form class="search-by-common-opts">
+  <input type="hidden" name="action" value="search"/>
+  <div class="well">
+    <div class="ds-wrapper">
+      <div class="ds-group ds-sort-by">
+        <div class="input-group">
+          <div class="input-group-addon">
+            <label for="sort_by">Sort by</label>
+          </div>
+          <select name="sort_by" class="form-control">
+            @for( (rv, dv) <- wrappers.Search.sortByOpts) {
+              @if( wrapper.sortBy == rv ) {
+                <option value="@rv" selected="selected">@dv</option>
+              } else {
+                <option value="@rv">@dv</option>
+              } 
+            }
+          </select>
+        </div>
+      </div>
+      <div class="ds-group ds-order">
+        <div class="input-group">
+          <div class="input-group-addon">
+            <label for="order">Dir</label>
+          </div>
+          <select name="order" class="form-control">
+            @for( (rv, dv) <- wrappers.Search.orderOpts) {
+              @if( wrapper.order == Some(rv.toLowerCase) ) {
+                <option value="@rv" selected="selected">@dv</option>
+              } else {
+                <option value="@rv">@dv</option>
+              } 
+            }
+          </select>
+        </div>
+      </div>
+      <div class="ds-group ds-rpp">
+        <div class="input-group">
+          <div class="input-group-addon">
+            <label for="rpp" class="control-label">Per</label>
+          </div>
+          <select name="rpp" class="form-control">
+            @for( (rv, dv) <- wrappers.Search.rppOpts) {
+              @if( wrapper.rpp == rv ) {
+                <option value="@rv" selected="selected">@dv</option>
+              } else {
+                <option value="@rv">@dv</option>
+              } 
+            }
+          </select>
+        </div>
+      </div>
+      <div class="ds-group ds-submit">
+        <button class="btn btn-primary">Update</button>
+      </div>
+    </div>
+  </div>
+</form>

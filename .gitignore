@@ -1,0 +1,7 @@
+target/
+/extra/node_modules/
+/extra/bower_components/
+
+/.lib/
+
+/.env

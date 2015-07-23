@@ -1,0 +1,35 @@
+@(wrapper: wrappers.Browse)(context: Pages)
+
+@import context._
+
+@target(offset: Int) = @{
+  baseUrl(wrapper.toMap + ("offset" -> offset.toString))
+}
+
+@pagerLabel = @{
+  "Now showing items %s through %s of %s".format(
+    wrapper.browseInfo.getOverallPosition + 1,
+    wrapper.browseInfo.getOverallPosition + wrapper.browseInfo.getResultCount,
+    wrapper.browseInfo.getTotal
+  )
+}
+
+@if( wrapper.browseInfo.getTotal > 0) {
+  <ul class="pager">
+    @if( wrapper.browseInfo.hasPrevPage ) {
+      <li class="previous">
+        <a href="@target(wrapper.browseInfo.getPrevOffset)">
+          &larr; Previous
+        </a>
+      </li>
+    }
+    <li><span>@pagerLabel</span></li>
+    @if( wrapper.browseInfo.hasNextPage ) {
+      <li class="next">
+        <a href="@target(wrapper.browseInfo.getNextOffset)">
+          Next &rarr; 
+        </a>
+      </li>
+    }
+  </ul>
+}
