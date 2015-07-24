@@ -6,7 +6,7 @@ This application uses:
 
 * the DSpace API (5.x) to connect to a local DSpace repository
 * Jersey JAX-RS for URL routing (and not much else)
-* Play Twirl for HTML templating
+* [Play Twirl](https://github.com/playframework/twirl) for HTML templating
 * [xsbt-web-plugin](https://github.com/earldouglas/xwp-template) for running in development
 * Bower and Gulp for frontend asset management
 
