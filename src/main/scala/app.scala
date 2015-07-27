@@ -23,21 +23,22 @@ trait Base extends richness.appImplicits {
   def response: HttpServletResponse
   def servletContext: ServletContext
 
-  private def url(
-    servletPath: String,
-    path: String,
-    params: Iterable[(String, String)]): String = {
-    val pairs = params.map { case (k, v) => utils.encodeURL(k) + "=" + utils.encodeURL(v) }
-    val query = if (pairs.isEmpty) "" else pairs.mkString("?", "&", "")
-    servletContext.getContextPath + servletPath + path + query
+  object UrlBuilder {
+    def apply(
+      servletPath: String,
+      path: String,
+      params: Iterable[(String, String)]): String = {
+      
+      val pairs = params.map { case (k, v) => utils.encodeURL(k) + "=" + utils.encodeURL(v) }
+      val query = if (pairs.isEmpty) "" else pairs.mkString("?", "&", "")
+      servletContext.getContextPath + servletPath + path + query
+    }
   }
 
   def url(path: String, params: Iterable[(String, String)]): String =
-    url(request.getServletPath, path, params)
-  def url(path: String): String = url(path, Iterable.empty)
+    UrlBuilder(request.getServletPath, path, params)
 
-  def staticUrl(path: String, params: Iterable[(String, String)] = Iterable.empty) = 
-    url("/static", path, params)
+  def url(path: String): String = url(path, Iterable.empty)
 
   def url(dso: DSpaceObject, params: Iterable[(String, String)]): String = dso match {
     case x: Community => url(s"/communities/${x.getID}", params)
@@ -46,6 +47,9 @@ trait Base extends richness.appImplicits {
   }
 
   def url(dso: DSpaceObject): String = url(dso, Iterable.empty)
+
+  def staticUrl(path: String, params: Iterable[(String, String)] = Iterable.empty) = 
+    UrlBuilder("/static", path, params)
 
   def fullUrl(path: String, params: Iterable[(String, String)] = Iterable.empty) = {
     val pref = s"${request.getScheme}://${request.getServerName}:${request.getServerPort}"
@@ -79,16 +83,11 @@ trait Base extends richness.appImplicits {
     def now = 
       request.optAttribute[Map[String, String]](KeyNow).getOrElse(Map.empty)
 
-    def now(key: String) = 
-      request.optAttribute[Map[String, String]](KeyNow).flatMap(_.get(key))
-
     def next(key: String, value: String) = {
       val curr = request.optAttribute[Map[String, String]](KeyNext).getOrElse(Map.empty)
       request.setAttribute(KeyNext, curr + (key -> value))
     }
-
   }
-
 
   object dspaceContext {
     val UserIdKey  = "disco.user.id"
@@ -104,21 +103,23 @@ trait Base extends richness.appImplicits {
       context
     }
 
-    def userSignedIn = Option(get.getCurrentUser).nonEmpty
-
-    def setUserId(id: Int) {
-      request.getSession.setAttribute(UserIdKey, id)
-    }
-
-    def unsetUserId {
-      request.optSession.foreach(_.removeAttribute(UserIdKey))
-    }
+    def userSignedIn = Option(get.getCurrentUser).nonEmpty    
 
     def get: DSpaceContext = 
       request.optAttribute[DSpaceContext](ContextKey).getOrElse(build)
 
     def complete {
       request.optAttribute[DSpaceContext](ContextKey).foreach(_.complete)
+    }
+  }
+
+  object auth {
+    def setUserId(id: Int) {
+      request.getSession.setAttribute(dspaceContext.UserIdKey, id)
+    }
+
+    def unsetUserId {
+      request.optSession.foreach(_.removeAttribute(dspaceContext.UserIdKey))
     }
   }
 
@@ -169,12 +170,10 @@ abstract class BaseController extends Base {
   @Context var servletContext: ServletContext = _
 
   @PostConstruct def before {
-    System.out.println("before")
     flash.rotateIn
   }
 
   @PreDestroy def after { 
-    System.out.println("after")
     flash.rotateOut
     dspaceContext.complete
   }
@@ -204,7 +203,7 @@ class HomeController extends BaseController with Pages {
   def baseUrl(params: Map[String, String] = Map.empty) = url("/", params)
 
   lazy val trailItems = 
-    Seq( TrailItem("Home", Some(url("/"))) ) ++ action.map(_ => TrailItem(title, None))
+    Seq(TrailItem("Home", Some(url("/")))) ++ action.map(_ => TrailItem(title, None))
 
   lazy val topCommunities =
     Community.findAllTop(dspaceContext.get).to[Seq]
@@ -280,7 +279,6 @@ class ItemsController extends BaseController with DsoPages {
   lazy val optParent = 
     ancestors.lastOption.collect { case coll: Collection => coll }
 
-
 }
 
 @Path("/bitstreams")
@@ -311,29 +309,29 @@ class HandleController extends BaseController with Base {
 }
 
 @Path("")
-class AuthController extends BaseController with Base {
+class SessionsController extends BaseController with Base {
 
   @GET @Path("/login")
-  def loginGet: Response = { 
+  def `new`: Response = { 
     val output = views.html.login(this).toString
     Response.status(200).entity(output).build 
   }
 
   @GET @Path("/logout")
-  def logout: Response = {
-    dspaceContext.unsetUserId
+  def delete: Response = {
+    auth.unsetUserId
     flash.next("success", "Logout successful")
     Response.seeOther(new java.net.URI("/")).build
   }
 
   @POST @Path("/login") @Consumes(Array("application/x-www-form-urlencoded"))
-  def loginPost(
+  def create(
     @FormParam("username") username: String,
     @FormParam("password") password: String): Response = {
 
     val loc = utils.authenticate(dspaceContext.get, username, password) match {
       case Right(id) => {
-        dspaceContext.setUserId(id)
+        auth.setUserId(id)
         flash.next("success", "Login successful")
         new java.net.URI("/")
       }

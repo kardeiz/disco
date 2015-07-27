@@ -19,7 +19,6 @@ gulp.task('scripts', function() {
     .pipe(concat('application.min.js'))
     .pipe(uglify())
     .pipe(gulp.dest('../src/main/webapp/static'));
-
 });
 
 gulp.task('stylesheets', function () {
@@ -32,8 +31,6 @@ gulp.task('stylesheets', function () {
     .pipe(less(lessOpts))
     .pipe(rename('application.min.css'))
     .pipe(gulp.dest('../src/main/webapp/static'));
-
-
 });
 
 gulp.task('fonts', function() {
@@ -50,7 +47,3 @@ gulp.task('images', function() {
 });
 
 gulp.task('default', ['scripts', 'stylesheets']);
-
-// gulp.task('default', function() {
-//   // place code for your default task here
-// });

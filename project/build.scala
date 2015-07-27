@@ -11,17 +11,16 @@ object DiscoBuild extends Build {
   val ScalaVersion = "2.11.6"
   val DSpaceVersion = "5.2"
 
-  lazy val localDependencies = {
-    val base = Seq(
-      "org.glassfish.jersey.containers" % "jersey-container-servlet" % "2.19",
-      "javax.servlet" % "javax.servlet-api" % "3.1.0",
-      "org.dspace" % "dspace-api" % "5.2",
-      "org.springframework" % "spring-mock" % "2.0.8"
-    ) 
-    if ( sys.env.get("DB_NAME") == Some("ORACLE") ) {
-      base ++ Seq("com.oracle" % "ojdbc6" % "11.2.0.3.0")
-    } else base
-  }
+  lazy val localDependencies = Seq(
+    "org.glassfish.jersey.containers" % "jersey-container-servlet" % "2.19",
+    "javax.servlet" % "javax.servlet-api" % "3.1.0",
+    "org.dspace" % "dspace-api" % "5.2",
+    "org.springframework" % "spring-mock" % "2.0.8"
+  ) ++ oracleDependency
+
+  lazy val oracleDependency = if ( sys.env.get("DB_NAME") == Some("ORACLE") ) {
+    Seq("com.oracle" % "ojdbc6" % "11.2.0.3.0")
+  } else Seq.empty
 
   lazy val localSettings = Seq(
     organization := Organization,
