@@ -24,3 +24,7 @@ You can also start a REPL by running `console`. Load the DSpace environment by r
     npm install
     bower install
     gulp
+
+#### Packaging
+
+Run `./sbt`, `package`, then copy the generated WAR file into your Tomcat `webapps` directory. Make sure you have set `DSPACE_DIR` somewhere Tomcat can see it (e.g., `tomcat.conf`).
