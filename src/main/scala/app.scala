@@ -321,7 +321,7 @@ class SessionsController extends BaseController with Base {
   def delete: Response = {
     auth.unsetUserId
     flash.next("success", "Logout successful")
-    Response.seeOther(new java.net.URI("/")).build
+    Response.seeOther(new java.net.URI(url("/"))).build
   }
 
   @POST @Path("/login") @Consumes(Array("application/x-www-form-urlencoded"))
@@ -333,11 +333,11 @@ class SessionsController extends BaseController with Base {
       case Right(id) => {
         auth.setUserId(id)
         flash.next("success", "Login successful")
-        new java.net.URI("/")
+        new java.net.URI(url("/"))
       }
       case Left(msg) => {
         flash.next("danger", "Login failed")
-        new java.net.URI("/login")
+        new java.net.URI(url("/login"))
       }
     }
     Response.seeOther(loc).build
