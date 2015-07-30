@@ -14,7 +14,7 @@ object DiscoBuild extends Build {
   lazy val localDependencies = Seq(
     "org.glassfish.jersey.containers" % "jersey-container-servlet" % "2.19",
     "javax.servlet" % "javax.servlet-api" % "3.1.0",
-    "org.dspace" % "dspace-api" % "5.2",
+    "org.dspace" % "dspace-api" % DSpaceVersion,
     "org.springframework" % "spring-mock" % "2.0.8"
   ) ++ oracleDependency
 
