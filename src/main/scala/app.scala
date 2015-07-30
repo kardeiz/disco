@@ -11,7 +11,6 @@ import javax.servlet.{ServletConfig, ServletContext}
 
 import javax.ws.rs._
 import javax.ws.rs.core.{Context, Response}
-// import javax.ws.rs.ext.{Provider, ExceptionMapper}
 import javax.annotation._
 
 import org.dspace.core.{Context => DSpaceContext}
