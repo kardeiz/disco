@@ -36,7 +36,7 @@ object DiscoBuild extends Build {
       |import io.github.kardeiz.disco._
       |""".stripMargin,
     libraryDependencies ++= localDependencies
-  ) ++ com.earldouglas.xwp.XwpPlugin.jetty(port = 3000 /*, args = Seq("--path", "foo") */)
+  ) ++ com.earldouglas.xwp.XwpPlugin.jetty(port = 3000, args = Seq("--path", "") )
 
   lazy val project = Project(
     "disco",

@@ -1,6 +1,8 @@
 package io.github.kardeiz.disco
 package app
 
+import java.net.URI
+
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServlet
@@ -23,39 +25,57 @@ trait Base extends richness.appImplicits {
   def response: HttpServletResponse
   def servletContext: ServletContext
 
-  object UrlBuilder {
-    def apply(
-      servletPath: String,
-      path: String,
-      params: Iterable[(String, String)]): String = {
-      
-      val pairs = params.map { case (k, v) => utils.encodeURL(k) + "=" + utils.encodeURL(v) }
-      val query = if (pairs.isEmpty) "" else pairs.mkString("?", "&", "")
-      servletContext.getContextPath + servletPath + path + query
+  object RichUrl {
+
+    def wrapQuery(queryString: String) = 
+      utils.nonEmpty(Option(queryString)).map("?" + _)
+
+    def buildQuery(params: Iterable[(String, String)]) = {
+      val pairs = params.map { case (k, v) => 
+        utils.encodeURL(k) + "=" + utils.encodeURL(v)
+      }
+      if (pairs.isEmpty) None else Option(pairs.mkString("?", "&", ""))
     }
+
+    def apply(path: String, query: Option[String]): RichUrl = 
+      apply(request.getServletPath, path, query)
+
+    implicit def richUrlToString(richUrl: RichUrl) = richUrl.toString
+    implicit def richUrlToURI(richUrl: RichUrl) = richUrl.toURI
   }
 
-  def url(path: String, params: Iterable[(String, String)]): String =
-    UrlBuilder(request.getServletPath, path, params)
+  case class RichUrl(servletPath: String, path: String, query: Option[String]) {
+    override def toString = 
+      servletContext.getContextPath + servletPath + path + query.getOrElse("")
 
-  def url(path: String): String = url(path, Iterable.empty)
-
-  def url(dso: DSpaceObject, params: Iterable[(String, String)]): String = dso match {
-    case x: Community => url(s"/communities/${x.getID}", params)
-    case x: Collection => url(s"/collections/${x.getID}", params)
-    case x: Item => url(s"/items/${x.getID}", params)
+    def toURI = new URI(toString)
   }
 
-  def url(dso: DSpaceObject): String = url(dso, Iterable.empty)
+  def url(path: String, query: Option[String]): RichUrl = RichUrl(path, query)
+
+  def url(path: String, params: Iterable[(String, String)]): RichUrl =
+    url(path, RichUrl.buildQuery(params))
+
+  def url(path: String): RichUrl = url(path, None)
+
+  def url(dso: DSpaceObject, query: Option[String]): RichUrl = dso match {
+    case x: Community => url(s"/communities/${x.getID}", query)
+    case x: Collection => url(s"/collections/${x.getID}", query)
+    case x: Item => url(s"/items/${x.getID}", query)
+  }
+
+  def url(dso: DSpaceObject, params: Iterable[(String, String)]): RichUrl =
+    url(dso, RichUrl.buildQuery(params))
+
+  def url(dso: DSpaceObject): RichUrl = url(dso, None)
 
   def staticUrl(path: String, params: Iterable[(String, String)] = Iterable.empty) = 
-    UrlBuilder("/static", path, params)
+    RichUrl("/static", path, RichUrl.buildQuery(params))
 
   def fullUrl(path: String, params: Iterable[(String, String)] = Iterable.empty) = {
     val pref = s"${request.getScheme}://${request.getServerName}:${request.getServerPort}"
     pref + url(path, params)
   }
-
 
   def retrieveUrl(bs: Bitstream, params: Iterable[(String, String)] = Iterable.empty) = 
     url(s"/bitstreams/${bs.getID}/retrieve", params)
@@ -183,7 +203,7 @@ abstract class BaseController extends Base {
 @Path("")
 class HomeController extends BaseController with Pages { 
 
-  @GET @Produces(Array("text/html"))
+  @GET
   def index: Response = { 
     val output = views.html.home(this).toString
     Response.status(200).entity(output).build 
@@ -297,13 +317,10 @@ class BitstreamsController extends BaseController with Base {
 @Path("/handle")
 class HandleController extends BaseController with Base {
 
-  @Context var uriInfo: UriInfo = _
-
   @GET @Path("{pref}/{id}")
   def show(@PathParam("pref") pref: String, @PathParam("id") id: String): Response = {
-    val hdl = Seq(pref, id).mkString("/")
-    val dso = HandleManager.resolveToObject(dspaceContext.get, hdl)
-    val uri = UriBuilder.fromUri(uriInfo.getRequestUri).replacePath(url(dso)).build()
+    val dso = HandleManager.resolveToObject(dspaceContext.get, s"${pref}/${id}")
+    val uri = url(dso, RichUrl.wrapQuery(request.getQueryString))
     Response.seeOther(uri).build
   }
 }
@@ -321,7 +338,7 @@ class SessionsController extends BaseController with Base {
   def delete: Response = {
     auth.unsetUserId
     flash.next("success", "Logout successful")
-    Response.seeOther(new java.net.URI(url("/"))).build
+    Response.seeOther(url("/")).build
   }
 
   @POST @Path("/login") @Consumes(Array("application/x-www-form-urlencoded"))
@@ -333,11 +350,11 @@ class SessionsController extends BaseController with Base {
       case Right(id) => {
         auth.setUserId(id)
         flash.next("success", "Login successful")
-        new java.net.URI(url("/"))
+        url("/")
       }
       case Left(msg) => {
         flash.next("danger", "Login failed")
-        new java.net.URI(url("/login"))
+        url("/login")
       }
     }
     Response.seeOther(loc).build

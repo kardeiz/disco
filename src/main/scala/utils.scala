@@ -22,15 +22,16 @@ object utils {
     if (res == AuthenticationMethod.SUCCESS) Right(context.getCurrentUser.getID) else Left("Failed")
   }
 
-
   object aliases {
     type FacetDetails = (Boolean, String, Map[String, String], Long)
     type FacetsWrapper = Option[Seq[(String, Seq[FacetDetails])]]
   }
 
-  def encodeURL = URLEncoder.encode(_: String, "UTF-8")
+  val encodeURL = URLEncoder.encode(_: String, "UTF-8")
   
-  def toInt(obj: Option[String]) = try { obj.map(_.toInt) } catch {
+  def toInt(obj: Option[String]) = try { 
+    obj.map(_.toInt) 
+  } catch {
     case e: java.lang.NumberFormatException => None
   }
 
