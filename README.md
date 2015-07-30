@@ -16,7 +16,7 @@ Set an enviroment variable `DSPACE_DIR` to the location of your DSpace directory
 
 Run `./sbt` and then do `container:start`. See the SBT manual and [xsbt-web-plugin](https://github.com/earldouglas/xwp-template) for additional SBT commands. 
 
-You can also start a REPL by running `console`. Load the DSpace environment by running `utils.DSpace.start`.
+You can also start a REPL by running `console`. Load the DSpace environment by running `utils.DSpace.start` inside the console.
 
 #### Build assets
 
