@@ -48,10 +48,9 @@
       @dso.optPreview(dspaceContext.get) match {
         case Some(preview) => {
           <div class="col-md-7">
-            <!-- <a href="#"> -->
-              <img class="preview-img" src="@retrieveUrl(preview)"/>
-              
-            <!-- </a> -->
+            <a href="@dso.optPrimaryBitstream.map(retrieveUrl(_)).getOrElse("#")">
+              <img class="preview-img" src="@retrieveUrl(preview)"/>              
+            </a>
           </div>
           <div class="col-md-5">
             @toggleFullUrlBlock(true)

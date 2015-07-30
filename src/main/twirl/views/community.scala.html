@@ -74,10 +74,17 @@
     @helpers.search.html.pagination(search)(context)
     <div class="search-list">
       <table class="table">
-        @for( (obj, c) <- search.resultCommsCollsWithCounts ) {
+        @for( obj <- search.resultCommunities ) {
           <tr>
             <td>
-              <a href="@url(obj)">@obj.getName</a>&nbsp;[@c]
+              <a href="@url(obj)">@obj.getName</a>&nbsp;[@obj.countItems]
+            </td>
+          </tr>
+        }
+        @for( obj <- search.resultCollections ) {
+          <tr>
+            <td>
+              <a href="@url(obj)">@obj.getName</a>&nbsp;[@obj.countItems]
             </td>
           </tr>
         }

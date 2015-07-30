@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServlet
 
 import javax.servlet.{ServletConfig, ServletContext}
 
-import javax.ws.rs.{DefaultValue, GET, POST, Path, FormParam, PathParam, Produces, Consumes, QueryParam, NotFoundException}
-import javax.ws.rs.core.{Context, Response, UriInfo, UriBuilder}
-import javax.ws.rs.ext.{Provider, ExceptionMapper}
+import javax.ws.rs._
+import javax.ws.rs.core.{Context, Response}
+// import javax.ws.rs.ext.{Provider, ExceptionMapper}
 import javax.annotation._
 
 import org.dspace.core.{Context => DSpaceContext}
@@ -189,9 +189,7 @@ abstract class BaseController extends Base {
   @Context var response: HttpServletResponse = _
   @Context var servletContext: ServletContext = _
 
-  @PostConstruct def before {
-    flash.rotateIn
-  }
+  @PostConstruct def before { flash.rotateIn }
 
   @PreDestroy def after { 
     flash.rotateOut
@@ -225,8 +223,7 @@ class HomeController extends BaseController with Pages {
   lazy val trailItems = 
     Seq(TrailItem("Home", Some(url("/")))) ++ action.map(_ => TrailItem(title, None))
 
-  lazy val topCommunities =
-    Community.findAllTop(dspaceContext.get).to[Seq]
+  lazy val topCommunities = Community.findAllTop(dspaceContext.get).to[Seq]
 
   lazy val action = request.optParameter("action")
 

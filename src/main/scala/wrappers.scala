@@ -278,10 +278,8 @@ case class Search(context: Context, dso: DSpaceObject, request: HttpServletReque
 
   lazy val resultItems = dspaceObjects.collect { case i: Item => i }
 
-  lazy val resultCommsCollsWithCounts = dspaceObjects.collect { 
-    case comm: Community => ( comm, comm.countItems )
-    case coll: Collection => ( coll, coll.countItems )
-  }
+  lazy val resultCommunities = dspaceObjects.collect { case c: Community => c }
+  lazy val resultCollections = dspaceObjects.collect { case c: Collection => c }
 
   lazy val facetObjects = result.getFacetResults.asScala
 
