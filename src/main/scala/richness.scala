@@ -31,20 +31,15 @@ case class RichRequest(obj: HttpServletRequest) {
 
 
   def optAttribute[T : Manifest](str: String): Option[T] = 
-    Option(obj.getAttribute(str)) match {
-      case Some(x: T) => Option(x)
-      case _ => None
-    }
+    Option(obj.getAttribute(str)).collect { case x: T => x }
+
 
   def optSession = Option(obj.getSession(false))
 }
 
 case class RichSession(obj: HttpSession) {
   def optAttribute[T : Manifest](str: String): Option[T] = 
-    Option(obj.getAttribute(str)) match {
-      case Some(x: T) => Option(x)
-      case _ => None
-    }
+    Option(obj.getAttribute(str)).collect { case x: T => x }
 }
 
 case class RichDSpaceObject(obj: DSpaceObject) {

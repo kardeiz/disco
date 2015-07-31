@@ -4,20 +4,20 @@
 @import org.dspace.content.Item
 
 @shortMetadata = {
-  <table class="table table-striped">
-    <tr><td>Title</td><td>@dso.getName</td></tr>
+  <table class="table table-striped short-metadata">
+    <tr><th>Title</th><td>@dso.getName</td></tr>
     @for( creator <- dso.optCreator(dspaceContext.get) ) {
-      <tr><td>Creator</td><td>@creator</td></tr>
+      <tr><th>Creator</th><td>@creator</td></tr>
     }
     @for( date <- dso.optDate(dspaceContext.get) ) {
-      <tr><td>Date</td><td>@date</td></tr>
+      <tr><th>Date</th><td>@date</td></tr>
     }
     @for( description <- dso.optDescription(dspaceContext.get) ) {
-      <tr><td>Description</td><td>@description</td></tr>
+      <tr><th>Description</th><td>@description</td></tr>
     }
     <tr>
-      <td>Permanent link</td>
-      <td>
+      <th>Permanent link</th>
+      <td class="truncatable">
         <a href="@url(s"/handle/${dso.getHandle}")">
           @fullUrl(s"/handle/${dso.getHandle}")
         <a>
