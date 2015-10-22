@@ -1,5 +1,5 @@
 package io.github.kardeiz.disco
-package app
+package web
 
 import java.net.URI
 
@@ -17,8 +17,9 @@ import org.dspace.core.{Context => DSpaceContext}
 import org.dspace.eperson.EPerson
 import org.dspace.content._
 import org.dspace.handle.HandleManager
+import org.dspace.authorize.AuthorizeManager
 
-trait Base extends richness.appImplicits {
+trait Base extends richness.webImplicits {
   
   def request: HttpServletRequest
   def response: HttpServletResponse
@@ -130,6 +131,9 @@ trait Base extends richness.appImplicits {
     def complete {
       request.optAttribute[DSpaceContext](ContextKey).foreach(_.complete)
     }
+
+    def isAdmin = AuthorizeManager.isAdmin(get)
+
   }
 
   object auth {
@@ -139,6 +143,14 @@ trait Base extends richness.appImplicits {
 
     def unsetUserId {
       request.optSession.foreach(_.removeAttribute(dspaceContext.UserIdKey))
+    }
+
+    def adminOnly {
+      if (!dspaceContext.isAdmin) {
+        flash.next("danger", "Not Authorized")
+        val response = Response.seeOther(url("/")).build
+        throw new WebApplicationException(response)
+      }
     }
   }
 
@@ -183,7 +195,7 @@ trait ContainerPages extends DsoPages {
 
 }
 
-abstract class BaseController extends Base {
+abstract class ApplicationController extends Base { 
   @Context var request: HttpServletRequest = _
   @Context var response: HttpServletResponse = _
   @Context var servletContext: ServletContext = _
@@ -198,7 +210,7 @@ abstract class BaseController extends Base {
 
 
 @Path("")
-class HomeController extends BaseController with Pages { 
+class HomeController extends ApplicationController with Pages { 
 
   @GET
   def index: Response = { 
@@ -236,7 +248,7 @@ class HomeController extends BaseController with Pages {
 }
 
 @Path("/communities")
-class CommunitiesController extends BaseController with ContainerPages {
+class CommunitiesController extends ApplicationController with ContainerPages {
   
   var dso: Community = _
 
@@ -256,7 +268,7 @@ class CommunitiesController extends BaseController with ContainerPages {
 }
 
 @Path("/collections")
-class CollectionsController extends BaseController with ContainerPages {
+class CollectionsController extends ApplicationController with ContainerPages {
   
   var dso: Collection = _
 
@@ -271,7 +283,7 @@ class CollectionsController extends BaseController with ContainerPages {
 }
 
 @Path("/items")
-class ItemsController extends BaseController with DsoPages {
+class ItemsController extends ApplicationController with DsoPages {
   
   var dso: Item = _
 
@@ -298,7 +310,7 @@ class ItemsController extends BaseController with DsoPages {
 }
 
 @Path("/bitstreams")
-class BitstreamsController extends BaseController with Base {
+class BitstreamsController extends ApplicationController with Base {
 
   @GET @Path("{id}/retrieve")
   def retrieve(@PathParam("id") id: String): Response = { 
@@ -311,7 +323,7 @@ class BitstreamsController extends BaseController with Base {
 }
 
 @Path("/handle")
-class HandleController extends BaseController with Base {
+class HandleController extends ApplicationController with Base {
 
   @GET @Path("{pref}/{id}")
   def show(@PathParam("pref") pref: String, @PathParam("id") id: String): Response = {
@@ -322,7 +334,7 @@ class HandleController extends BaseController with Base {
 }
 
 @Path("")
-class SessionsController extends BaseController with Base {
+class SessionsController extends ApplicationController with Base {
 
   @GET @Path("/login")
   def `new`: Response = { 
@@ -354,6 +366,59 @@ class SessionsController extends BaseController with Base {
       }
     }
     Response.seeOther(loc).build
+  }
+}
+
+@Path("/admin")
+class AdminController extends ApplicationController with Base {
+  
+  import org.dspace.content.WorkspaceItem
+  import org.dspace.content.MetadataSchema
+  import org.dspace.browse.IndexBrowse
+  import org.dspace.content.InstallItem
+
+  import org.glassfish.jersey.media.multipart._
+
+  @GET @Path("/collections/{id}/items/add")
+  def addItemGet(@PathParam("id") id: String): Response = {
+    auth.adminOnly
+    val output = views.html.addItem(this).toString
+    Response.status(200).entity(output).build 
+  }
+
+  @POST @Path("/collections/{id}/items/add") 
+  @Consumes(Array("multipart/form-data", "application/x-www-form-urlencoded"))
+  def addItemPost(
+    @PathParam("id") id: String,
+    @FormDataParam("title") title: String,
+    @FormDataParam("file") file: java.io.InputStream,
+    @FormDataParam("file") contentDispositionHeader: FormDataContentDisposition): Response = {
+    
+    auth.adminOnly
+
+    val collection = Collection.find(dspaceContext.get, utils.toInt(id).get)
+    val workspaceItem = WorkspaceItem.create(dspaceContext.get, collection, false)
+    
+    var item = workspaceItem.getItem
+
+    item.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, null, title)
+
+    Option(file).foreach { _file =>
+      val name = contentDispositionHeader.getFileName
+      val bitstream = item.createSingleBitstream(_file)
+      bitstream.setName(name)
+      bitstream.update
+    }
+
+    workspaceItem.update
+
+    (new IndexBrowse).indexItem(item)
+
+    item = InstallItem.installItem(dspaceContext.get, workspaceItem)
+
+
+    flash.next("success", "Added item")
+    Response.seeOther(url(s"/admin/collections/${id}/items/add")).build
   }
 
 }

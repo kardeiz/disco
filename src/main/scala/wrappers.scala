@@ -35,7 +35,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 import javax.servlet.http.HttpServletRequest
 
-import richness.appImplicits._
+import richness.webImplicits._
 
 object RecentItems {
   def apply(context: Context, dso: DSpaceObject, offset: Int = 0) = {

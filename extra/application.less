@@ -94,18 +94,7 @@
   }
   .name {
     .center-block;
-    h2 {
-      font-size: 37px;
-      font-family: "Roboto", @font-family-sans-serif;
-      font-weight: 300;
-      font-style: italic;
-      color: @gray-dark;
-      text-shadow: 0 -1px 0 fadeout(@tcu-executive-blue, 5%);
-      a { 
-        color: inherit;
-        &:hover, &:focus { text-decoration: none; }
-      }
-    }
+    
     @media (min-width: @screen-md-min) { 
       .pull-right;
       h2 {
@@ -116,6 +105,22 @@
     }
   }
 
+}
+
+.name {
+  h2 {
+    font-size: 37px;
+    font-family: "Roboto", @font-family-sans-serif;
+    font-weight: 300;
+    font-style: italic;
+    line-height: 74px;
+    color: @gray-dark;
+    text-shadow: 0 -1px 0 fadeout(@tcu-executive-blue, 5%);
+    a { 
+      color: inherit;
+      &:hover, &:focus { text-decoration: none; }
+    }
+  }
 }
 
 .recent-submissions,

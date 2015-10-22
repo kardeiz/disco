@@ -13,6 +13,7 @@ object DiscoBuild extends Build {
 
   lazy val localDependencies = Seq(
     "org.glassfish.jersey.containers" % "jersey-container-servlet" % "2.19",
+    "org.glassfish.jersey.media" % "jersey-media-multipart" % "2.19",
     "javax.servlet" % "javax.servlet-api" % "3.1.0",
     "org.dspace" % "dspace-api" % DSpaceVersion,
     "org.springframework" % "spring-mock" % "2.0.8"
@@ -31,7 +32,7 @@ object DiscoBuild extends Build {
       Classpaths.typesafeReleases,
       Resolver.mavenLocal
     ),
-    TwirlKeys.templateImports ++= Seq("io.github.kardeiz.disco._", "app._"),
+    TwirlKeys.templateImports ++= Seq("io.github.kardeiz.disco._", "web._"),
     initialCommands in console := """
       |import io.github.kardeiz.disco._
       |""".stripMargin,

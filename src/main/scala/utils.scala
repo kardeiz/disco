@@ -29,7 +29,9 @@ object utils {
 
   val encodeURL = URLEncoder.encode(_: String, "UTF-8")
   
-  def toInt(obj: Option[String]) = try { 
+  def toInt(obj: String): Option[Int] = toInt(Option(obj))
+
+  def toInt(obj: Option[String]): Option[Int] = try { 
     obj.map(_.toInt) 
   } catch {
     case e: java.lang.NumberFormatException => None
@@ -54,9 +56,8 @@ object utils {
   }
 
   object config {
-    val dspaceDir = sys.env("DSPACE_DIR")
-    val dspaceCfg = new File(dspaceDir, "config/dspace.cfg").getPath
-    lazy val props = propLoader("/config.properties")
+    lazy val dspaceDir = sys.env("DSPACE_DIR")
+    lazy val dspaceCfg = new File(dspaceDir, "config/dspace.cfg").getPath
   }
 
   lazy val messages = propLoader("/messages.properties")

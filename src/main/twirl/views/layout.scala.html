@@ -42,24 +42,8 @@
   </head>
   <body>
     <div class="container">
-      <div class="loc-header">
-        <div class="logos-wrapper">
-          <div class="logos">
-            <div class="tcu-logo">
-              <a href="http://www.tcu.edu">
-                <img src="@staticUrl("/images/header-1.png")"/>
-              </a>
-            </div>
-            <div class="mcb-logo">
-              <a href="http://lib.tcu.edu">
-                <img src="@staticUrl("/images/header-2.png")"/>
-              </a>
-            </div>        
-          </div>
-        </div>
-        <div class="name">
-          <h2><a href="@url("/")">@static.siteName</a></h2>
-        </div>
+      <div class="name">
+        <h2><a href="@url("/")">@static.siteName</a></h2>
       </div>
       <div class="navbar navbar-default" role="navigation">
         <div class="container-fluid">
@@ -74,7 +58,7 @@
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
               <li><a href="@url("/")">Home</a></li>
-              @if(dspaceContext.userSignedIn) {
+              @if(dspaceContext.userSignedIn) {                
                 <li>
                   <a href="@url("/logout")" 
                     title="Signed in as: @dspaceContext.get.getCurrentUser.getEmail">

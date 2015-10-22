@@ -9,6 +9,12 @@
       <h4><small>@sub</small></h4>
     }
   </div>
+  @if(dspaceContext.isAdmin) {
+    <p>
+      <a href="@url(s"/admin/collections/${dso.getID}/items/add")"><i class="fa fa-plus"></i> Add new item</a>
+    </p>
+    <hr/>
+  }
   @if( action == None ) {
     @helpers.browse.html.typeOptions(context)
     <br/>

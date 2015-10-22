@@ -5,7 +5,7 @@
       version="3.0">
 
   <listener>
-    <listener-class>io.github.kardeiz.disco.web.Init</listener-class>
+    <listener-class>io.github.kardeiz.disco.WebWrapper</listener-class>
   </listener>
 
   <listener>
@@ -22,17 +22,21 @@
 
   
   <servlet>
-    <servlet-name>app</servlet-name>
+    <servlet-name>web</servlet-name>
     <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
     <init-param>
       <param-name>jersey.config.server.provider.packages</param-name>
-      <param-value>io.github.kardeiz.disco.app</param-value>
+      <param-value>io.github.kardeiz.disco.web</param-value>
+    </init-param>
+    <init-param>
+      <param-name>jersey.config.server.provider.classnames</param-name>
+      <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
   
   <servlet-mapping>
-    <servlet-name>app</servlet-name>
+    <servlet-name>web</servlet-name>
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
 

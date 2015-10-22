@@ -139,7 +139,7 @@ case class RichItem(obj: Item) {
 
 }
 
-trait appImplicits {
+trait webImplicits {
   implicit def richRequest(obj: HttpServletRequest) = RichRequest(obj)
   implicit def richSession(obj: HttpSession) = RichSession(obj)
   implicit def richItem(obj: Item) = RichItem(obj)
@@ -147,4 +147,4 @@ trait appImplicits {
   implicit def richCommunity(obj: Community) = RichCommunity(obj)
 }
 
-object appImplicits extends appImplicits
+object webImplicits extends webImplicits
