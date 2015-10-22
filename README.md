@@ -14,7 +14,7 @@ This application uses:
 
 Set an enviroment variable `DSPACE_DIR` to the location of your DSpace directory [dspace]. If you are using Oracle, also add a variable `DB_NAME=ORACLE`. 
 
-Run `./sbt` and then do `container:start`. See the SBT manual and [xsbt-web-plugin](https://github.com/earldouglas/xwp-template) for additional SBT commands. 
+Run `./sbt` and then do `container:start`. By default, the application will be accessible at http://localhost:3000. See the SBT manual and [xsbt-web-plugin](https://github.com/earldouglas/xwp-template) for additional SBT commands. 
 
 You can also start a REPL by running `console`. Load the DSpace environment by running `utils.DSpace.start` inside the console.
 
