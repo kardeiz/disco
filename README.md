@@ -28,3 +28,13 @@ You can also start a REPL by running `console`. Load the DSpace environment by r
 #### Packaging
 
 Run `./sbt`, `package`, then copy the generated WAR file into your Tomcat `webapps` directory. Make sure you have set `DSPACE_DIR` somewhere Tomcat can see it (e.g., `tomcat.conf`).
+
+#### Other notes
+
+I have deliberately tried to avoid buying into the whole Jersey JAX-RS ecosystem (although much of `web.scala` is littered with Jersey specific code that should be abstracted out into a separate component). I initially wanted it to be more modular, so that it would be possible to switch out the routing component easily (e.g., to use something like [UrlRewriteFilter](http://tuckey.org/urlrewrite/) instead of Jersey). However, I'm not sure if this is the best design decision.
+
+<hr/>
+
+## Notes for [DSpace User Interface Prototype Challenge](https://wiki.duraspace.org/display/DSPACE/DSpace+UI+Prototype+Challenge)
+
+#### Customization Capabilities
